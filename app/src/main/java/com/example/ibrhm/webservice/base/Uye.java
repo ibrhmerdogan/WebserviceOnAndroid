@@ -6,17 +6,19 @@ package com.example.ibrhm.webservice.base;
 
 
 public class Uye {
+    private String id;
     private String name;
     private String email;
     private String no;
 
-    public Uye(String adSoyad, String email, String uyeID)
+    public Uye(String id,String name, String email, String no)
     {
-        this.name = adSoyad;
+        this.id=id;
+        this.name = name;
         this.email = email;
-        this.no = uyeID;
+        this.no = no;
     }
-
+    public String getid(){return this.id;}
     public String getAdSoyad(){return this.name;}
     public String getEmail(){return this.email;}
     public String getUyeID(){return this.no;}

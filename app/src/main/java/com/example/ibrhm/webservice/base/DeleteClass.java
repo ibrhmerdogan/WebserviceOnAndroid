@@ -1,15 +1,7 @@
-package com.example.ibrhm.webservice;
+package com.example.ibrhm.webservice.base;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-
-import com.example.ibrhm.webservice.base.DeleteClass;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -25,52 +17,31 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * Created by ibrhm on 1.02.2017.
+ * Created by ibrhm on 10.02.2017.
  */
 
-public class AddRecordMain extends Activity {
-    private static final String url="http://denemesitesidirdbyeni.co.nf/uyeekle.php";
-    Button add;
-    EditText name,email,no;
-    Context context;
-    DeleteClass deleteClass;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.addrecord_main);
-        add=(Button)findViewById(R.id.button);
-        name=(EditText)findViewById(R.id.editText);
-        email=(EditText)findViewById(R.id.editText2);
-        no=(EditText)findViewById(R.id.editText3);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int x=Integer.parseInt(no.getText().toString());
-                deleteClass=new DeleteClass();
-                deleteClass.deleteFuns(x);
+public class DeleteClass {
 
-                JSONObject jRegister=new JSONObject();
-                try {
-                    jRegister.put("name",name.getText().toString());
-                    jRegister.put("email",email.getText().toString());
-                    jRegister.put("no",no.getText().toString());
+    private static final String url_sil = "http://denemesitesidirdbyeni.co.nf/uyesil.php";
+    private static final String url = "http://denemesitesidirdbyeni.co.nf/uyeler.php";
+    public void  deleteFuns(int no){
+        JSONObject jRegister = new JSONObject();
+        try {
+            jRegister.put("no", no);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        HttpClient client = new HttpClient(url_sil, jRegister);
+        client.getJSONFromUrl();
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                HttpClient client = new HttpClient(url, jRegister);
-               client.getJSONFromUrl();
-            }
-        });
     }
-
-
-    public class HttpClient extends AsyncTask<Void, Void, JSONObject> {
+    class HttpClient extends AsyncTask<Void, Void, JSONObject> {
         private final String TAG = "HttpClient";
         private String URL;
         private JSONObject jsonObjSend;
-        private JSONObject result = null;
+
+        String  resultString;
+
 
         public HttpClient(String URL, JSONObject jsonObjSend) {
             this.URL = URL;
@@ -81,7 +52,6 @@ public class AddRecordMain extends Activity {
             this.execute();
 
         }
-
         @Override
         protected JSONObject doInBackground(Void... params) {
 
@@ -89,8 +59,7 @@ public class AddRecordMain extends Activity {
                 DefaultHttpClient httpclient = new DefaultHttpClient();
                 HttpPost httpPostRequest = new HttpPost(URL);
 
-                StringEntity se;
-                se = new StringEntity(jsonObjSend.toString());
+                StringEntity se = new StringEntity(jsonObjSend.toString());
 
                 // Set HTTP parameters
                 httpPostRequest.setEntity(se);
@@ -99,6 +68,7 @@ public class AddRecordMain extends Activity {
 
                 long t = System.currentTimeMillis();
                 HttpResponse response = (HttpResponse) httpclient.execute(httpPostRequest);
+                //Toast.makeText(getApplicationContext(),""+response,Toast.LENGTH_LONG).show();
                 Log.i(TAG, "HTTPResponse received in [" + (System.currentTimeMillis() - t) + "ms]");
 
                 HttpEntity entity = response.getEntity();
@@ -108,16 +78,16 @@ public class AddRecordMain extends Activity {
                     InputStream instream = entity.getContent();
 
                     // convert content stream to a String
-                    String resultString = convertStreamToString(instream);
+                    resultString = convertStreamToString(instream);
                     instream.close();
-                    resultString = resultString.substring(1, resultString.length() - 1); // remove wrapping "[" and "]"
+                    // resultString = resultString.substring(1, resultString.length() - 1); // remove wrapping "[" and "]"
+                    JSONObject object= new JSONObject(resultString);
 
-                    JSONObject jsonObjRecv = new JSONObject(resultString);
 
-                    // Raw DEBUG output of our received JSON object:
-                    Log.i(TAG, "<JSONObject>\n" + jsonObjRecv.toString() + "\n</JSONObject>");
 
-                    return jsonObjRecv;
+                    //Raw DEBUG output of our received JSON object:
+                    Log.i(TAG, "<JSONObject>\n" + object.toString() + "\n</JSONObject>");
+                    return object;
                 }
 
             } catch (Exception e) {
@@ -126,8 +96,8 @@ public class AddRecordMain extends Activity {
             return null;
         }
 
-        protected void onPostExecute(JSONObject jObject) {
-            result = jObject;
+        protected void onPostExecute(JSONObject object)  {
+
         }
 
         private String convertStreamToString(InputStream is) {
@@ -137,8 +107,11 @@ public class AddRecordMain extends Activity {
 
             String line = null;
             try {
+                int x=0;
                 while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
+                    x++;
+                    if(x>4)
+                        sb.append(line + "\n");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
